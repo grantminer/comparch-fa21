@@ -9,8 +9,13 @@ VIVADO=vivado -mode batch -source
 
 DECODERS=decoder_1_to_2.sv decoder_2_to_4.sv decoder_3_to_8.sv
 
+ADDERS = adder1.sv adder2.sv adder3.sv
+
 test_decoders: test_decoders.sv $(DECODERS)
 	${IVERILOG} $^ -o test_decoders.bin && ${VVP} test_decoders.bin
+
+test_adders: test_adders.sv $(ADDERS)
+	${IVERILOG} $^ -o test_adders.bin && ${VVP} test_adders.bin
 
 test_led_array_driver: test_led_array_driver.sv led_array_driver.sv $(DECODERS)
 	${IVERILOG} $^ -o test_led_array_driver.bin && ${VVP} test_led_array_driver.bin
@@ -21,7 +26,7 @@ test_conway_cell: test_conway_cell.sv conway_cell.sv
 test_main: test_main.sv main.sv conway_cell.sv led_array_driver.sv $(DECODERS)
 	${IVERILOG} $^ -o test_main.bin && ${VVP} test_main.bin
 
-main.bit: main.sv conway_cell.sv led_array_driver.sv $(DECODERS)
+main.bit: main.sv conway_cell.sv led_array_driver.sv $(DECODERS) $(ADDERS)
 	@echo "########################################"
 	@echo "#### Building FPGA bitstream        ####"
 	@echo "########################################"

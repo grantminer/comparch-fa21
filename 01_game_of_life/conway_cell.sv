@@ -12,6 +12,4 @@ module conway_cell(clk, rst, ena, state_0, state_d, state_q, neighbors);
   input wire [7:0] neighbors;
   logic [3:0] living_neighbors;
 
-
-
 endmodule
