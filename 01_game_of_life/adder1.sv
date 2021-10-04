@@ -8,4 +8,5 @@ module adder1(a, b, c_in, sum, c_out);
 
   assign sum = (a ^ b) ^ c_in;
   assign c_out = (a & b) | ((a ^ b) & c_in);
+  
 endmodule
