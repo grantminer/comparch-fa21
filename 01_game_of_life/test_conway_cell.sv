@@ -12,7 +12,7 @@ module test_conway_cell;
   conway_cell UUT(
     .clk(clk), .rst(rst), .ena(ena),
     .neighbors(neighbors),
-    .state_0(1'b0), .state_d(state_d), .state_q(state_q)
+    .state_0(state_0), .state_d(state_d), .state_q(state_q)
   );
 
   always #5 clk = ~clk; // Toggle a clock every 5 time units.
@@ -46,6 +46,7 @@ module test_conway_cell;
       neighbors = i[7:0];
       @(posedge clk);
       $display("%b : %b: %b", neighbors, state_d, state_q);
+      state_0 = state_d;
     end
 
     #10;

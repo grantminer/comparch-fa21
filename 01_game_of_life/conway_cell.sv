@@ -10,13 +10,13 @@ module conway_cell(clk, rst, ena, state_0, state_d, state_q, neighbors);
   output logic state_q;
 
   input wire [7:0] neighbors;
-  logic [3:0] living_neighbors;
-  int [1:0] AB;
-  int [1:0] CD;
-  int [1:0] EF;
-  int [1:0] GH;
-  int [2:0] ABCD;
-  int [2:0] EFGH;
+  wire [3:0] living_neighbors;
+  wire [1:0] AB;
+  wire [1:0] CD;
+  wire [1:0] EF;
+  wire [1:0] GH;
+  wire [2:0] ABCD;
+  wire [2:0] EFGH;
 
   adder1 AB1(.a(neighbors[0]), .b(neighbors[1]), .c_in(1'b0), .sum(AB[0]), .c_out(AB[1]));
   adder1 CD1(.a(neighbors[2]), .b(neighbors[3]), .c_in(1'b0), .sum(CD[0]), .c_out(CD[1]));
@@ -28,10 +28,17 @@ module conway_cell(clk, rst, ena, state_0, state_d, state_q, neighbors);
 
   adder3 allneighbors(.a(ABCD), .b(EFGH), .c_in(1'b0), .sum(living_neighbors[2:0]), .c_out(living_neighbors[3]));
 
-  always_comb begin
-    
-  end
+  assign state_d = (~living_neighbors[3] & ~living_neighbors[2] & living_neighbors[1] & state_0) +
+                  (~living_neighbors[3] & ~living_neighbors[2] & living_neighbors[1] & living_neighbors[0] &  ~state_0);
 
-  
+  always @(posedge clk) begin
+    if(~rst & ena) begin
+      state_q <= state_d;  
+    end else if (~rst & ~ena) begin
+      state_q <= state_q;
+    end else begin
+      state_q <= 1'b0;
+    end
+  end
 
 endmodule
