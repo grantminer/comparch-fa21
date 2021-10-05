@@ -94,6 +94,7 @@ sudo adduser $USER dialout
 
 # install icarus verilog from source - thanks to Manu for the help!
 sudo apt-get remove iverilog
+sudo apt-get install gperf autoconf
 cd /path/to/workspace
 git clone https://github.com/steveicarus/iverilog.git
 cd iverilog
@@ -110,6 +111,12 @@ Go to the [runtime](https://digilent.com/reference/lib/exe/fetch.php?tok=f5f244&
 ```bash
 sudo dpkg -i digilent.adept.runtime_2.4.1-amd64.deb
 sudo dpkg -i digilent.adept.utilities_2.4.1-amd64.deb
+```
+
+Then you can flash FPGAs without Xilinx tools using:
+```
+djtgcfg enum # Will show you the string to put for the -d arg
+djtgcfg prog -d CmodA7 -i 0 -f main.bit
 ```
 
 ### Xilinx Install
