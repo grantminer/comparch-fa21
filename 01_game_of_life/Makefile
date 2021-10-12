@@ -17,7 +17,7 @@ test_decoders: test_decoders.sv $(DECODERS)
 test_adders: test_adders.sv $(ADDERS)
 	${IVERILOG} $^ -o test_adders.bin && ${VVP} test_adders.bin
 
-test_led_array_driver: test_led_array_driver.sv led_array_driver.sv $(DECODERS)
+test_led_array_driver: test_led_array_driver.sv led_array_driver.sv led_array_model.sv $(DECODERS)
 	${IVERILOG} $^ -o test_led_array_driver.bin && ${VVP} test_led_array_driver.bin
 
 test_conway_cell: test_conway_cell.sv conway_cell.sv $(ADDERS)
