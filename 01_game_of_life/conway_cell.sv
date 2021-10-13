@@ -28,16 +28,18 @@ module conway_cell(clk, rst, ena, state_0, state_d, state_q, neighbors);
 
   adder3 allneighbors(.a(ABCD), .b(EFGH), .c_in(1'b0), .sum(living_neighbors[2:0]), .c_out(living_neighbors[3]));
 
-  assign state_d = (~living_neighbors[3] & ~living_neighbors[2] & living_neighbors[1] & state_0) +
-                  (~living_neighbors[3] & ~living_neighbors[2] & living_neighbors[1] & living_neighbors[0] &  ~state_0);
+  always_comb begin
+    state_d = (~living_neighbors[3] & ~living_neighbors[2] & living_neighbors[1] & state_q) ||
+                  (~living_neighbors[3] & ~living_neighbors[2] & living_neighbors[1] & living_neighbors[0] &  ~state_q);
+  end
 
-  always @(posedge clk) begin
+  always_ff @(posedge clk) begin
     if(~rst & ena) begin
       state_q <= state_d;  
     end else if (~rst & ~ena) begin
       state_q <= state_q;
     end else begin
-      state_q <= 1'b0;
+      state_q <= state_0;
     end
   end
 
