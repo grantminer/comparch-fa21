@@ -18,21 +18,26 @@ module conway_cell(clk, rst, ena, state_0, state_d, state_q, neighbors);
   wire [2:0] ABCD;
   wire [2:0] EFGH;
 
+  // Adds neighbors into four two-bit numbers
   adder1 AB1(.a(neighbors[0]), .b(neighbors[1]), .c_in(1'b0), .sum(AB[0]), .c_out(AB[1]));
   adder1 CD1(.a(neighbors[2]), .b(neighbors[3]), .c_in(1'b0), .sum(CD[0]), .c_out(CD[1]));
   adder1 EF1(.a(neighbors[4]), .b(neighbors[5]), .c_in(1'b0), .sum(EF[0]), .c_out(EF[1]));
   adder1 GH1(.a(neighbors[6]), .b(neighbors[7]), .c_in(1'b0), .sum(GH[0]), .c_out(GH[1]));
 
+  // Adds two bit numbers into two four-bit numbers
   adder2 ABCD2(.a(AB), .b(CD), .c_in(1'b0), .sum(ABCD[1:0]), .c_out(ABCD[2]));
   adder2 EFGH2(.a(EF), .b(GH), .c_in(1'b0), .sum(EFGH[1:0]), .c_out(EFGH[2]));
 
+  // Calculates the total number of living neighbors
   adder3 allneighbors(.a(ABCD), .b(EFGH), .c_in(1'b0), .sum(living_neighbors[2:0]), .c_out(living_neighbors[3]));
 
+  // Determines whether the cell should become/stay alive or dead in the next cycle
   always_comb begin
     state_d = (~living_neighbors[3] & ~living_neighbors[2] & living_neighbors[1] & state_q) ||
                   (~living_neighbors[3] & ~living_neighbors[2] & living_neighbors[1] & living_neighbors[0] &  ~state_q);
   end
 
+  // Updates the state of the cell
   always_ff @(posedge clk) begin
     if(~rst & ena) begin
       state_q <= state_d;  

@@ -8,6 +8,7 @@ module test_adders;
     logic c;
     wire [3:0] out;
 
+    // Adds two three-bit numbers to check output is as expected.
     adder3 ADDFUN(.a(a), .b(b), .c_in(c), .sum(out[2:0]), .c_out(out[3]));
 
     initial begin
@@ -16,6 +17,8 @@ module test_adders;
         $dumpvars(0, ADDFUN);
 
         $display("a | b | c | out");
+
+        // Runs through all possible inputs for a and b, then also checks carry values of 0 or 1 for each
         for (int i = 0; i < 8; i = i + 1) begin
           a = i;
           for (int j = 0; j < 8; j = j + 1) begin

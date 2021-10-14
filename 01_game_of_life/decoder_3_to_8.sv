@@ -4,7 +4,7 @@ module decoder_3_to_8(ena, in, out);
   input wire [2:0] in;
   output logic [7:0] out;
 
-
+  // Separates the three-bit input into eight bits representing the inputs discrete states
   always_comb begin
     out[7] = ena & in[2] & in[1] & in[0];
     out[6] = ena & in[2] & in[1] & ~in[0];

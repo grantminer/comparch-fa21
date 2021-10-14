@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 `default_nettype none
 
-// `define SIMULATION
+`define SIMULATION
 
 module test_main;
   parameter N = 8;

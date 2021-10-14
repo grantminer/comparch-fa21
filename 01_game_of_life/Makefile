@@ -9,7 +9,7 @@ VIVADO=vivado -mode batch -source
 
 DECODERS=decoder_1_to_2.sv decoder_2_to_4.sv decoder_3_to_8.sv
 
-ADDERS = adder1.sv adder2.sv adder3.sv
+ADDERS = adder1.sv adder2.sv adder3.sv # Add adder files for use in other test modules
 
 test_decoders: test_decoders.sv $(DECODERS)
 	${IVERILOG} $^ -o test_decoders.bin && ${VVP} test_decoders.bin

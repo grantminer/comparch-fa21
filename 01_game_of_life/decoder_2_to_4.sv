@@ -4,6 +4,7 @@ input wire ena;
 input wire [1:0] in;
 output logic [3:0] out;
 
+// Separates the two-bit number into four bits, representing each unique state of the input
 always_comb begin
   out[3] = ena & in[0] & in[1];
   out[2] = ena & ~in[0] & in[1];

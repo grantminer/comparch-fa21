@@ -37,7 +37,11 @@ Edit `conway_cell.sv` and use `test_conway_cell.sv` to implement combinational l
 
 Once it works, you can run `make test_main` to see a simulation of the full grid!
 
+***Note***: We ran into an issue where we interpreted state_0 as the current state of the cell, creating problems when running test_main, but not when running test_conway_cell. We should be more clear about documentation in the future to know for certain what the variables refer to
+
 See if you can follow the examples in `main.sv` to change your initial conditions. If you change N you can simulate larger and larger grids! I put a fun `pulsar` example in for `N == 15`.
+
+***Note:*** Getting interesting, persistent patterns might be helped by creating an infinite looping grid. The logic would be significantly more complicated, but wrapping around the edges to each other would generate much more interesting behavior.
 
 ## 3. Flashing the FPGA
 Ask the instructor for an FPGA and stub USB cable. The micro-usb connector on the FPGA is very fragile - *avoid plugging and unplugging directly into that!* Instead unplug and replug from the extension cable when power on and off.
@@ -47,9 +51,12 @@ Ask the instructor for an FPGA and stub USB cable. The micro-usb connector on th
 The `main.sv` file has some simple logic for the built in LEDs based on the buttons. 
   - See if you can a) flash the FPGA and have it do what the code describes using `make program_fpga` or the gui (tutorial in class).
   - Alter the button -> leds logic, then reflash to confirm that you can make changes!
+  - ***Note:*** We have run into some trouble with this logic. We are not sure if we are simply misunderstanding the logic, or if subsequent flashing does not work.
 
 ## 4. LED Array Driver
 - Read the datasheet of the LED driver to implement combinational logic that can drive the row and column pins of the LED array. This is pretty challenging, but think about what the voltages need to be at the row pin or the column pin based on the cell status and the status of our x decoder.
+
+***Note:*** After several attempts at debugging, we determined that writing out all of the logic was simply too complex for the file. Instead of writing N lines for each possible N value, we instead created for loops to generate that code for us for a few specific N values. 
 
 ## 5. Build the circuit! 
 

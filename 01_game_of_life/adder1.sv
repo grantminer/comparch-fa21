@@ -6,7 +6,10 @@ module adder1(a, b, c_in, sum, c_out);
   output wire sum;
   output wire c_out;
 
+  // Adds two single bit numbers
   assign sum = (a ^ b) ^ c_in;
+
+  // Determines whether there is any carry out
   assign c_out = (a & b) | ((a ^ b) & c_in);
   
 endmodule
