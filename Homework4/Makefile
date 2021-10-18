@@ -24,3 +24,7 @@ test_adder32a: test_adder32a.sv adder32.sv adder1.sv
 # Call this to clean up all your generated files
 clean:
 	rm -f *.bin *.vcd vivado*.log vivado*.jou vivado*.str
+
+# Call this to generate your submission zip file.
+submission:
+	zip submission.zip Makefile *.sv README.md
