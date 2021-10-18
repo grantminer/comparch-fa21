@@ -1,0 +1,29 @@
+#! /usr/local/bin/vvp
+:ivl_version "11.0 (stable)" "(v11_0-82-g5ea6ee13)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision + 0;
+:vpi_module "/usr/local/lib/ivl/system.vpi";
+:vpi_module "/usr/local/lib/ivl/vhdl_sys.vpi";
+:vpi_module "/usr/local/lib/ivl/vhdl_textio.vpi";
+:vpi_module "/usr/local/lib/ivl/v2005_math.vpi";
+:vpi_module "/usr/local/lib/ivl/va_math.vpi";
+S_0x5577782974a0 .scope module, "mux2" "mux2" 2 1;
+ .timescale 0 0;
+    .port_info 0 /INPUT 1 "ena";
+    .port_info 1 /INPUT 2 "in";
+    .port_info 2 /OUTPUT 1 "out";
+v0x557778295e00_0 .net *"_ivl_1", 0 0, L_0x5577782dc0b0;  1 drivers
+v0x5577782dbcc0_0 .net *"_ivl_3", 0 0, L_0x5577782dc180;  1 drivers
+o0x7f1b1f345078 .functor BUFZ 1, C4<z>; HiZ drive
+v0x5577782dbda0_0 .net "ena", 0 0, o0x7f1b1f345078;  0 drivers
+o0x7f1b1f3450a8 .functor BUFZ 2, C4<zz>; HiZ drive
+v0x5577782dbe40_0 .net "in", 1 0, o0x7f1b1f3450a8;  0 drivers
+v0x5577782dbf20_0 .net "out", 0 0, L_0x5577782dc2a0;  1 drivers
+L_0x5577782dc0b0 .part o0x7f1b1f3450a8, 1, 1;
+L_0x5577782dc180 .part o0x7f1b1f3450a8, 0, 1;
+L_0x5577782dc2a0 .functor MUXZ 1, L_0x5577782dc180, L_0x5577782dc0b0, o0x7f1b1f345078, C4<>;
+# The file index is used to find the file name in the following table.
+:file_names 3;
+    "N/A";
+    "<interactive>";
+    "mux2.sv";
