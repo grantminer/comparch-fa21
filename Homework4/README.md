@@ -14,7 +14,9 @@ As an example, if the bitstring is 10101100 and the enable bitstring is 010, the
 
 Tests were run at all of the hierarchical levels of the multiplexer. The test files were based on example code from previous work done. The overall structure involves a nested for loops to iterate through all possible inputs and returning the outputs. For narrower multiplexers, iterating through to check all inputs return the correct outputs is quite simple. However, once the multiplexers reached even 8 bits, the results of test code were much too long. To combat this, smaller ranges within the total 4,294,967,296 possible different bitstrings that could be selected from were chosen. Each bitstring also is matched with a 5-bit enable signal, for a total of 137,438,953,472 different possible tests to run. 
 
-Panning through ranges of 100 values for the input bitstring and with the full 5-bit enable signal, sections could easily be confirmed and verified. Given that the function of the multiplexer does not change significantly at any input value, as long as its efficacy can be verified at sections along its range and for at least every bit in the incoming bitstring, the multiplexer is verified.
+To augment testing in random ranges, an overall random test was run to generate random 32-bit input signals and random 5-bit enable signals. This test checks that the enable signal works analogously to indexing to various input bits. For example, if the input bitstring is 0110011100101011, and the enable signal is 0101, the program checks that the index 5 in the input is equal to the output of the multiplexer.
+
+Running this test is simple. After navigating to the correct directory, run the command "make test_mux32" and the test code will run. If the program returns "SUCCESS" at the end, no errors have been encountered.
 
 ## Adder
 
@@ -35,3 +37,7 @@ The adder faces a similar problem with the multiplexer. Its sheer size prevents 
 The first approach (test_adder32a.sv) used this method, but it was not effective. Instead, a second method was introduced to generate random numbers and check that they are added correctly. This method allows for checking of wide ranges of values, without having to iterate through parameters in all the various ranges. 
 
 The program does not generate new random numbers every time it is run. Instead, it produces the same "random" numbers repeatedly. But it does help validate the function of the 32 bit adder. 
+
+Running this test is simple. After navigating to the correct directory, run the command "make test_adder32" and the test code will run. If the program returns "SUCCESS" at the end, no errors have been encountered.
+
+To run the first implementation that sweeps through inputs over specific ranges, simply run the command "make test_adder32a".
