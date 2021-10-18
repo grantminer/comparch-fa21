@@ -27,4 +27,4 @@ clean:
 
 # Call this to generate your submission zip file.
 submission:
-	zip submission.zip Makefile *.sv README.md
+	zip submission.zip Makefile *.sv README.md *.pdf
