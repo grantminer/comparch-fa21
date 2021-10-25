@@ -35,7 +35,7 @@ end
 // You can make "tasks" in testbenches. Think of them like methods of a class, 
 // they have access to the member variables.
 task print_io;
-  $display("%d < %d (%d)", a, b, out, correct_out);
+  $display("%b < %b (%d)%d", a, b, out, correct_out);
 endtask
 
 

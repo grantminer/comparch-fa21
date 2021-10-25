@@ -8,4 +8,10 @@ output logic out;
 
 // Copy any other modules you use into this folder and update the Makefile accordingly.
 
+wire [N:0] sum;
+
+adderN #(.N(N)) subtractor(.a(a), .b(b), .sum(sum));
+
+assign out = (a[N-1] & ~b[N-1] & ~sum[N] & sum[N-1]) | (~a[N-1] & ~b[N-1] & ~sum[N] & ~sum[N-1]) | (a[N-1] & b[N-1] & sum[N] & ~sum[N-1]);
+
 endmodule
