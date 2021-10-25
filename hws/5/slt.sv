@@ -10,8 +10,8 @@ output logic out;
 
 wire [N:0] sum;
 
-adderN #(.N(N)) subtractor(.a(a), .b(b), .sum(sum));
+adderN #(.N(N)) subtractor(.a(a), .b(~b), .carry0(1'b1), .sum(sum));
 
-assign out = (a[N-1] & ~b[N-1] & ~sum[N] & sum[N-1]) | (~a[N-1] & ~b[N-1] & ~sum[N] & ~sum[N-1]) | (a[N-1] & b[N-1] & sum[N] & ~sum[N-1]);
+assign out = ((a[N-1]^b[N-1]) & a[N-1]) | ((a[N-1] ~^ b[N-1])&sum[N-1]);
 
 endmodule

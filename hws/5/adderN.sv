@@ -1,9 +1,10 @@
-module adderN(a, b, sum);
+module adderN(a, b, carry0, sum);
 
     parameter N = 32;
 
     input wire [N-1:0]a;
     input wire [N-1:0]b;
+    input wire carry0;
 
     output wire [N:0]sum;
 
@@ -13,7 +14,7 @@ module adderN(a, b, sum);
     wire [N-1:0] gen;
     wire [N-1:0] prop;
 
-    assign carry[0] = 1'b0;
+    assign carry[0] = carry0;
 
     genvar i;
     generate 
