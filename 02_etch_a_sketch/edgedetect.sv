@@ -7,4 +7,5 @@ module edgedetect(clk, button, pressed);
     always_ff @(posedge clk) begin
         pressed <= ~pressed & button;
     end
+    
 endmodule

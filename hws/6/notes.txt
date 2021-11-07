@@ -1,0 +1,9 @@
+I just wanted to throw in a small amount of notes explaining some things that didn't work for me. 
+Despite my best efforts, I could not get the tests to run for either the shift left or right logicals
+or for the parallel to serial converter. I would get a slew of errors from the multiplexers when running 
+the shifters, as well as the message "A for statement must compare against a constant value to be 
+synthesized in an always_comb process." I did not get any of the print output for the tests or any
+indication that I was successful or not.
+
+I've compared the code I generated with others whose code passed all of the tests, and it seems almost
+exactly the same as theirs. I'm not sure what error I've encountered. Thanks for understanding!!

@@ -1,8 +1,9 @@
-module rgb(clk, rst, button);
+module rgb(clk, rst, button, rgb);
 
     input wire clk;
     input wire rst;
-    input wire button
+    input wire button;
+    output [2:0] rgb;
     
     wire step;
     wire [1:0] state;
@@ -20,7 +21,8 @@ module rgb(clk, rst, button);
     end
 
     always_comb begin
-        
+        rgb[0] = 
     end
+    
 
 endmodule
