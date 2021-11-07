@@ -20,6 +20,8 @@ test_pwm: tests/test_pwm.sv pulse_generator.sv pwm.sv
 test_triangle_generator: tests/test_triangle_generator.sv triangle_generator.sv
 	${IVERILOG} $^ -o test_triangle_generator.bin && ${VVP} test_triangle_generator.bin
 
+test_debouncer: tests/test_debouncer.sv debouncer.sv
+	${IVERILOG} $^ -o test_debouncer.bin && ${VVP} test_debouncer.bin
 
 test_main: tests/test_main.sv main.sv $(SRCS)
 	@echo "This might take a while, we're testing a lot of clock cycles!"

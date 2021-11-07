@@ -9,7 +9,7 @@ VVP_POST_ARGS=-fst
 
 SRCS=mux4.sv mux8.sv mux16.sv mux32.sv
 
-test_sll : test_sll.sv shift_left_logical.sv $(SRCS)
+test_sll : test_sll.sv shift_left_logical.sv #$(SRCS)
 	${IVERILOG} $^ -o test_sll.bin && ${VVP} test_sll.bin -fst
 waves_sll : test_sll
 	gtkwave sll.fst
@@ -35,4 +35,4 @@ clean:
 
 # Call this to generate your submission zip file.
 submission:
-	zip submission.zip Makefile *.sv *.pdf
+	zip submission.zip Makefile *.sv *.pdf *.txt
