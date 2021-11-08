@@ -11,15 +11,15 @@ VVP_POST=-fst
 # Add your source sv files here! Is the fact that I populated this with muxes should be  *STRONG HINT*. 
 SRCS=mux4.sv mux8.sv mux16.sv mux32.sv \
 	shift_left_logical.sv shift_right_logical.sv shift_right_arithmetic.sv \
-	adder_1.sv adder_n.sv
+	adder_1.sv adder_n.sv slt.sv encoder.sv
 # Look up .PHONY rules for Makefiles
 .PHONY: clean submission
 
 test_alu: test_alu.sv alu.sv alu_types.sv alu_behavioural.sv ${SRCS}
-	${IVERILOG} $^ -o test_alu.bin && ${VVP} test_alu.bin ${VVP_POST}
+	${IVERILOG} $^ -o test_alu.bin && ${VVP} test_alu.bin
 
 waves_alu: test_alu
-		gtkwave alu.fst &
+		gtkwave alu.vcd &
 
 # Call this to clean up all your generated files
 clean:

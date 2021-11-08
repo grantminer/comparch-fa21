@@ -31,7 +31,7 @@ int errors_by_op[0:10];
 logic [31:0] test_vector[0:N_TEST_VECTOR-1];
 logic loop ;
 initial begin
-  $dumpfile("alu.fst");
+  $dumpfile("alu.vcd");
   $dumpvars(0, ALU);
   $dumpvars(0, ALU_B);
   
