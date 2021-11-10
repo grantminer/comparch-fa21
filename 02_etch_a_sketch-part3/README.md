@@ -23,6 +23,12 @@ We're using [Adafruit's 2.8" TFT LCD with Cap Touch Breakout Board w/MicroSD Soc
 ### a) Catch up from last time
 This folder has a fully implemented display module. To make sure you are caught up please read through the `spi_controllers.v`, `ili9341_display_controller.sv`, and `main.sv` files.
 
+You need to solder headers on to one side of the board, then clip it into your breadboard as shown here:
+
+![breadboard](docs/breadboard-example.jpg)
+
+You should only need two jumpers, one for GND and one for VDD (goes into the VIN pin of the display).
+
 Then modify something about the display pixel pattern in `ili9341_display_controller.sv` to change what the synthesized pattern looks like on the display, and call an instructor over to take a look!
 
 ### b) i2c controller

@@ -6,7 +6,7 @@ parameter W = 8; // Width of each row of  the memory
 parameter L = 32; // Length fo the memory
 parameter INIT = "zeros.memh";
 
-input clk;
+input wire clk;
 input [$clog2(L)-1:0] addr;
 output logic [W-1:0] data;
 
