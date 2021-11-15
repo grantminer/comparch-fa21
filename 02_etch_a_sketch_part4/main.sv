@@ -35,7 +35,7 @@ parameter VRAM_W = 16;
 input wire sysclk;
 wire clk;
 input wire [1:0] buttons;
-logic rst; always_comb rst = buttons[1]; // Use button 0 as a reset signal.
+logic rst; always_comb rst = buttons[0]; // Use button 0 as a reset signal.
 output logic [1:0] leds;
 output logic [2:0] rgb;
 output logic [7:0] pmod;  always_comb pmod = {6'b0, sysclk, clk}; // You can use the pmod port for debugging!
@@ -132,7 +132,7 @@ ili9341_display_controller ILI9341(
   .data_commandb(data_commandb),
   .touch(touch0),
   .vram_rd_addr(vram_rd_addr),
-  .vram_rd_data(vram_rd_data), .button(buttons[0])
+  .vram_rd_data(vram_rd_data)
 );
 
 // Some useful timing signals. //TODO@(avinash) - move to a different module or use a generate to save space here...
