@@ -54,60 +54,60 @@ logic [7:0] data_buffer;
 
 always_ff @(posedge clk) begin : i2c_fsm  
   if(rst) begin
-    clk_divider_counter <= DIVIDER_COUNT-1;
-    scl <= 1;
+    clk_divider_counter <= DIVIDER_COUNT-1; // maximizes clock value for counter
+    scl <= 1; // sets scl high in preparation for start sequence
     bit_counter <= 0;
     o_data <= 0;
     o_valid <= 0;
-    i_ready <= 1;
-    state <= S_IDLE;
+    i_ready <= 1; //communicates that unit is ready data
+    state <= S_IDLE; // initializes state to wait for data
   end else begin // out of reset
 // SOlUTION START
     if(state == S_IDLE) begin
-      if(i_valid & i_ready) begin
-        i_ready <= 0;
+      if(i_valid & i_ready) begin // if data is sent
+        i_ready <= 0; // prevent another sequence from being sent
         cooldown_counter <= COOLDOWN_CYCLES;
         o_valid <= 0;
-        state <= S_START;
-        addr_buffer <= {i_addr, mode};
-        data_buffer <= i_data;
+        state <= S_START; // moves to start behavior of controller
+        addr_buffer <= {i_addr, mode}; // Creates the add and wr/rd section of the bitstring
+        data_buffer <= i_data; // Creates the data section
         bit_counter <= 7;
-        clk_divider_counter <= DIVIDER_COUNT-1;
+        clk_divider_counter <= DIVIDER_COUNT-1; // Resets the clock to max value
       end
       else begin
-        scl <= 1;
+        scl <= 1; // hold scl high in waiting to start
         if(cooldown_counter > 0) begin
-          i_ready <= 0;
+          i_ready <= 0; // wait for delay to allow space between signals
           cooldown_counter <= cooldown_counter - 1;
         end else begin
-          i_ready <= 1;
+          i_ready <= 1; // ready for next signal
         end
       end
     end else begin // handle all non-idle state here
     if (clk_divider_counter == 0) begin
-      clk_divider_counter <= DIVIDER_COUNT-1;
-      scl <= ~scl;
+      clk_divider_counter <= DIVIDER_COUNT-1; // re-maximizes clock counter
+      scl <= ~scl; // changes the serial clock (creates oscillation)
       case(state)
         S_START: begin
-          state <= S_ADDR;
+          state <= S_ADDR; // if in start case, move on to address
         end
         S_ADDR: begin
           if(scl) begin // negative edge logic
-            if(bit_counter > 0) bit_counter <= bit_counter - 1;
-          // end else begin // positive edge logic
-            if(bit_counter == 0) state <= S_ACK_ADDR;
+            if(bit_counter > 0) bit_counter <= bit_counter - 1; // increment bit counter
+          // end else begin // positive edge logic // positive edge logic not needed for this section
+            if(bit_counter == 0) state <= S_ACK_ADDR; // if all bits have been communicated, await acknowledge
           end
         end
         S_ACK_ADDR: begin
           // $display("[i2c controller] waiting for ack on address 0x%h, addr[0] = %b", addr_buffer[7:1], addr_buffer[0]);
           //if(~sda) begin
-            bit_counter <= 7;
-            case(addr_buffer[0]) 
+            bit_counter <= 7; // reset bit counter
+            case(addr_buffer[0]) // based on wr/rd bit at end of address buffer
               WRITE_8BIT_REGISTER : begin
-                if(scl) state <= S_WR_DATA;
+                if(scl) state <= S_WR_DATA; // if in writing mode
               end
               READ_8BIT : begin
-                if(~scl) state <= S_RD_DATA;
+                if(~scl) state <= S_RD_DATA; // if in reading mode
               end
             endcase
           //end
@@ -121,40 +121,40 @@ always_ff @(posedge clk) begin : i2c_fsm
         end
 
         S_RD_DATA : begin
-          if(~scl) begin
-            data_buffer[0] <= sda;
-            data_buffer[7:1] <= data_buffer[6:0];
+          if(~scl) begin // posedge logic
+            data_buffer[0] <= sda; // sets sda to MSB of data buffer
+            data_buffer[7:1] <= data_buffer[6:0]; // shifts the lesser bits to the left to change the MSB
             if(bit_counter > 0) begin
-              bit_counter <= bit_counter - 1;
+              bit_counter <= bit_counter - 1; // increment bit counter
             end
             else begin
-              state <= S_ACK_RD;
+              state <= S_ACK_RD; // after all bits are sent, move to acknowledgement
             end
           end
         end
         S_ACK_RD : begin
           if(~scl) begin // positive edge
-            state <= S_STOP;
-            o_data <= data_buffer;
-            o_valid <= 1;
+            state <= S_STOP; // end logic
+            o_data <= data_buffer; // data 
+            o_valid <= 1; // data is valid
           end
         end
         S_WR_DATA: begin
           if(scl) begin // negative edge logic
-            bit_counter <= bit_counter - 1;
-            if(bit_counter > 0) begin  
+            bit_counter <= bit_counter - 1; // increment bit counter
+            if(bit_counter > 0) begin  // driving sda happens in always comb block later in file
               // data_buffer[0] <= 1'b1; // Shift in ones to leave SDA as default high. More for the prettiness of the waveform, it shouldn't matter.
-              data_buffer[7:1] <= data_buffer[6:0];
+              data_buffer[7:1] <= data_buffer[6:0]; // shift data to left
             end
           end
-          else if(&bit_counter) begin
-              state <= S_ACK_WR;
+          else if(&bit_counter) begin // if bit_counter == -1, or 1111 in two's complement
+              state <= S_ACK_WR; // wait for acknowledge
           end
         end
         S_ACK_WR: begin
           if(scl) begin // negative edge logic? //TODO(avinash)
             state <= S_STOP;
-            if(~sda) begin
+            if(~sda) begin // need to drive sda high after scl is set high
             end
           end
         end
