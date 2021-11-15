@@ -47,14 +47,14 @@ input ILI9341_color_t vram_rd_data; // VRAM rd data
 output logic [$clog2(VRAM_L)-1:0] vram_rd_addr; // VRAM rd addr.
 
 // SPI Controller that talks to the ILI9341 chip
-spi_transaction_t spi_mode;
-wire i_ready;
-logic i_valid;
-logic [15:0] i_data;
-logic o_ready;
-wire o_valid;
-wire [23:0] o_data;
-wire [4:0] spi_bit_counter;
+spi_transaction_t spi_mode; // Whether reading and/or writing and how much
+wire i_ready; // controller ready to accept data
+logic i_valid; // data is available
+logic [15:0] i_data; // input data
+logic o_ready; 
+wire o_valid; // goes low when new transaction begins
+wire [23:0] o_data; // result of read
+wire [4:0] spi_bit_counter; // incrementer for "loop"
 spi_controller SPI0(
     .clk(clk), .rst(rst), 
     .sclk(spi_clk), .csb(spi_csb), .mosi(spi_mosi), .miso(spi_miso),
@@ -64,8 +64,8 @@ spi_controller SPI0(
 );
 
 // ROM that stores the configuration sequence the display needs
-wire [7:0] rom_data;
-logic [$clog2(ROM_LENGTH)-1:0] rom_addr;
+wire [7:0] rom_data; // data read from rom
+logic [$clog2(ROM_LENGTH)-1:0] rom_addr; // address or read data
 block_rom #(.INIT("memories/ili9341_init.memh"), .W(8), .L(ROM_LENGTH)) ILI9341_INIT_ROM (
   .clk(clk), .addr(rom_addr), .data(rom_data)
 );
@@ -77,7 +77,7 @@ enum logic [2:0] {
   S_INCREMENT_PIXEL = 1,
   S_START_FRAME = 2,
   S_TX_PIXEL_DATA_START = 3,
-  S_TX_PIXEL_DATA_BUSY = 4,
+  S_TX_PIXEL_DATA_BUSY = 4, // Unused
   S_WAIT_FOR_SPI = 5,
   S_ERROR //very useful for debugging
 } state, state_after_wait;
@@ -94,11 +94,11 @@ enum logic [2:0] {
   S_CFG_DONE
 } cfg_state, cfg_state_after_wait;
 
-ILI9341_color_t pixel_color;
+ILI9341_color_t pixel_color; // basic color options
 logic [$clog2(DISPLAY_WIDTH):0] pixel_x;
 logic [$clog2(DISPLAY_HEIGHT):0] pixel_y;
 
-ILI9341_register_t current_command;
+ILI9341_register_t current_command; // commands to be sent
 
 // Comb. outputs
 /* Note - it's pretty critical that you keep always_comb blocks small and separate.
@@ -122,9 +122,9 @@ always_comb case (state)
 endcase
 
 always_comb case(state)
-  S_INIT: i_data = {8'd0, rom_data};
-  S_START_FRAME: i_data = {8'd0, current_command};
-  default: i_data = pixel_color;
+  S_INIT: i_data = {8'd0, rom_data}; // makes pixel color LSBs of data string
+  S_START_FRAME: i_data = {8'd0, current_command}; // makes command LSBs of data string
+  default: i_data = pixel_color; // sets data to the raw color
 endcase
 
 always_comb case (state)
@@ -133,24 +133,22 @@ always_comb case (state)
 endcase
 
 always_comb begin
-  hsync = pixel_x == (DISPLAY_WIDTH-1);
-  vsync = hsync & (pixel_y == (DISPLAY_HEIGHT-1));
+  hsync = pixel_x == (DISPLAY_WIDTH-1); // if any pixel in last column
+  vsync = hsync & (pixel_y == (DISPLAY_HEIGHT-1)); // if bottom corner (max index in row and col)
 end
 
-
-
-
 always_comb begin  : draw_cursor_logic
-  if(touch.valid & (touch.x[8:2] == pixel_x[8:2]) 
+  vram_rd_addr = pixel_y*DISPLAY_WIDTH + pixel_x; // From solutions
+  if(touch.valid & (touch.x[8:2] == pixel_x[8:2]) // if touch
     & (touch.y[8:2] == pixel_y[8:2])) begin
-    pixel_color = WHITE;
+    pixel_color = WHITE; // make touched pixel white
   end else begin
     // Have this draw from memory using rd_addr and rd_data
-    r
+    pixel_color = vram_rd_data // From solutions
   end
 end
 
-logic [$clog2(CFG_CMD_DELAY):0] cfg_delay_counter;
+logic [$clog2(CFG_CMD_DELAY):0] cfg_delay_counter; // clock divider
 logic [7:0] cfg_bytes_remaining;
 
 always_ff @(posedge clk) begin : main_fsm
@@ -163,10 +161,11 @@ always_ff @(posedge clk) begin : main_fsm
     pixel_x <= 0;
     pixel_y <= 0;
     rom_addr <= 0;
-    data_commandb <= 1;
-  end else if (button) begin
-    data_commandb <= 8'h21;
+    data_commandb <= 1; // sending data
   end
+  // end else if (button) begin // command should invert display, focusing on annotation over implementing this functionality
+  //   data_commandb <= 8'h21;
+  // end
   else if(ena) begin
     case (state)
       S_INIT: begin
@@ -174,16 +173,16 @@ always_ff @(posedge clk) begin : main_fsm
           S_CFG_GET_DATA_SIZE : begin
             cfg_state_after_wait <= S_CFG_GET_CMD;
             cfg_state <= S_CFG_MEM_WAIT;
-            rom_addr <= rom_addr + 1;
+            rom_addr <= rom_addr + 1; // move to next pixel value
             case(rom_data) 
-              8'hFF: begin
-                cfg_bytes_remaining <= 0;
-                cfg_delay_counter <= CFG_CMD_DELAY;
+              8'hFF: begin // if data at address = 11111111
+                cfg_bytes_remaining <= 0; // no more configuration to read
+                cfg_delay_counter <= CFG_CMD_DELAY; // sets delay to 150 ms
               end
-              8'h00: begin
-                cfg_bytes_remaining <= 0;
-                cfg_delay_counter <= 0;
-                cfg_state <= S_CFG_DONE;
+              8'h00: begin 
+                cfg_bytes_remaining <= 0; // no more configuration to read
+                cfg_delay_counter <= 0; // sets delay to 0 ms
+                cfg_state <= S_CFG_DONE; // finished configuring rom (?)
               end
               default: begin
                 cfg_bytes_remaining <= rom_data;
@@ -196,7 +195,7 @@ always_ff @(posedge clk) begin : main_fsm
             cfg_state <= S_CFG_MEM_WAIT;
           end
           S_CFG_SEND_CMD : begin
-            data_commandb <= 0;
+            data_commandb <= 0; // Sending commands to display
             if(rom_data == 0) begin
               cfg_state <= S_CFG_DONE;
             end else begin
@@ -205,7 +204,7 @@ always_ff @(posedge clk) begin : main_fsm
             end
           end
           S_CFG_GET_DATA: begin
-            data_commandb <= 1;
+            data_commandb <= 1; // Sending data to display
             rom_addr <= rom_addr + 1;
             if(cfg_bytes_remaining > 0) begin
               cfg_state_after_wait <= S_CFG_SEND_DATA;
@@ -221,14 +220,14 @@ always_ff @(posedge clk) begin : main_fsm
             cfg_state <= S_CFG_SPI_WAIT;
           end
           S_CFG_DONE : begin
-            state <= S_START_FRAME;
+            state <= S_START_FRAME; // Switch out of configuration
           end
           S_CFG_SPI_WAIT : begin
             if(cfg_delay_counter > 0) cfg_delay_counter <= cfg_delay_counter-1;
             else if (i_ready) begin
                cfg_state <= cfg_state_after_wait;
                cfg_delay_counter <= 0;
-               data_commandb <= 1;
+               data_commandb <= 1; // Sending data to display
             end
           end
           S_CFG_MEM_WAIT : begin
@@ -240,39 +239,39 @@ always_ff @(posedge clk) begin : main_fsm
       end
       S_WAIT_FOR_SPI: begin
         if(i_ready) begin
-          state <= state_after_wait;
+          state <= state_after_wait; // if ready to accept data, continue
         end
       end
       S_START_FRAME: begin
-        data_commandb <= 0;
-        state <= S_WAIT_FOR_SPI;
+        data_commandb <= 0; // Sending commands to display
+        state <= S_WAIT_FOR_SPI; // check if ready for data before moving on to tx
         state_after_wait <= S_TX_PIXEL_DATA_START;
       end
       S_TX_PIXEL_DATA_START: begin
-        data_commandb <= 1;
+        data_commandb <= 1; // Sending data to display
         state_after_wait <= S_INCREMENT_PIXEL;
-        state <= S_WAIT_FOR_SPI;
+        state <= S_WAIT_FOR_SPI; // check if ready for data before incrementing
       end
-      S_TX_PIXEL_DATA_BUSY: begin
-        if(i_ready) state <= S_INCREMENT_PIXEL;
+      S_TX_PIXEL_DATA_BUSY: begin // Never used state
+        if(i_ready) state <= S_INCREMENT_PIXEL; // if ready for data, continue to increment
       end
-      S_INCREMENT_PIXEL: begin
+      S_INCREMENT_PIXEL: begin // loops through pixels to look for touch
         state <= S_TX_PIXEL_DATA_START;
-        if(pixel_x < (DISPLAY_WIDTH-1)) begin
+        if(pixel_x < (DISPLAY_WIDTH-1)) begin // moves from left to right
           pixel_x <= pixel_x + 1;
         end else begin
-          pixel_x <= 0;
-          if (pixel_y < (DISPLAY_HEIGHT-1)) begin
+          pixel_x <= 0; // resets to left edge of display
+          if (pixel_y < (DISPLAY_HEIGHT-1)) begin // moves down one column
             pixel_y <= pixel_y + 1;
           end else begin
-            pixel_y <= 0;
+            pixel_y <= 0; // resets to top left corner
             state <= S_START_FRAME;
           end
         end
       end
       default: begin
-        state <= S_ERROR;
-        pixel_y <= -1;
+        state <= S_ERROR; // Nothing happens as a result of this change. Everything stops
+        pixel_y <= -1; // invalid pixel values
         pixel_x <= -1;
       end
     endcase
