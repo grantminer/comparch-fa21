@@ -23,21 +23,34 @@ logic [N-1:0] counter;
 // You can use behavioural combinational logic, but try to keep your sequential
 //   and combinational blocks as separate as possible.
 
-// SOLUTION START
-
-always_comb begin
-  out = ena & ( (counter < duty) | &counter );
+always_ff @(posedge duty) begin
+  counter <= 0;
+  out <= 0;
 end
 
 always_ff @(posedge clk) begin
-  if(rst) begin
-    counter <=0;
+  if (rst) begin
+    counter <= 0;
+    out <= 0;
   end
-  else if (step) begin
+
+  if (~ena) begin
+    out <= 0;
+  end
+
+  if (ena & step & (counter == 2**(N-1))) begin
+    counter <= 0;
+    out <= 1;
+  end
+  
+  if (ena & step & (counter < duty)) begin
+    out <= 1;
     counter <= counter + 1;
+  end else if (step) begin
+    counter <= counter + 1;
+    out <= 0;
   end
 end
 
-// SOLUTION END
 
 endmodule

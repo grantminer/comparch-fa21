@@ -28,6 +28,10 @@ waves_srl: test_srl
 test_sra: test_sra.sv shift_right_arithmetic.sv $(SRCS)
 	${IVERILOG} $^ -o test_srl.bin && ${VVP} test_srl.bin ${VVP_POST_ARGS}
 
+test_sll : test_sll.sv shift_left_logical.sv #$(SRCS)
+	${IVERILOG} $^ -o test_sll.bin && ${VVP} test_sll.bin -fst
+waves_sll : test_sll
+	gtkwave sll.fst
 waves_sra: test_sra
 		gtkwave sra.fst &
 
@@ -44,4 +48,4 @@ clean:
 
 # Call this to generate your submission zip file.
 submission:
-	zip submission.zip Makefile *.sv *.pdf
+	zip submission.zip Makefile *.sv *.pdf *.txt

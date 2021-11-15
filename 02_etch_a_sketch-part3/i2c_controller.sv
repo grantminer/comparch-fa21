@@ -60,7 +60,77 @@ always_ff @(posedge clk) begin : i2c_fsm
     o_valid <= 0;
     i_ready <= 1;
     state <= S_IDLE;
-  end else begin // out of reset
+  end else begin 
+    case(state)
+      S_IDLE : begin
+
+        clk_divider_counter <= 119;
+        if (i_valid == 1) begin
+          state <= S_START;
+        end
+
+      end
+      S_START : begin
+
+        if (clk_divider_counter ~= 0) begin
+          sda <= 0;
+          clk_divider_counter <= clk_divider_counter - 1;
+          if (clk_divider_counter < 60 & scl) begin
+            scl <= 0;
+          end
+        end else begin
+          state <= S_ADDR;
+          bit_counter <= 7;
+        end
+
+      end
+
+      S_ADDR : begin
+
+        if (clk_divider_counter == 0) begin
+          clk_divider_counter <= 119;
+          scl <= ~scl;
+          if (scl) begin
+            if (bit_counter == 0) begin
+              state <= S_ACK_ADDR;
+            end else begin
+              sda <= i_addr[bit_counter-2];
+              bit_counter = bit_counter - 1;
+            end
+          end
+        end else begin
+          clk_divider_counter <= clk_divider_counter - 1;
+        end
+
+      end
+
+      S_ACK_ADDR : begin
+        
+        if (clk_divider_counter == 0) begin
+          clk_divider_counter <= 119;
+          
+        end
+
+      end
+      S_WR_DATA : begin
+        
+      end
+      S_ACK_WR : begin
+        
+      end
+      S_RD_DATA : begin
+        
+      end
+      S_ACK_RD : begin
+        
+      end
+      S_STOP : begin
+        
+      end
+      S_ERROR : begin
+        
+      end
+      default : // out of reset
   end
 end
 

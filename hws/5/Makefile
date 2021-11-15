@@ -16,7 +16,7 @@ test_pwm: test_pwm.sv pulse_generator.sv pwm.sv
 test_triangle_generator: test_triangle_generator.sv triangle_generator.sv
 	${IVERILOG} $^ -o test_triangle_generator.bin && ${VVP} test_triangle_generator.bin
 
-test_slt: test_slt.sv slt.sv
+test_slt: test_slt.sv slt.sv adder1.sv adderN.sv
 	${IVERILOG} $^ -o test_slt.bin && ${VVP} test_slt.bin
 
 # Call this to clean up all your generated files
