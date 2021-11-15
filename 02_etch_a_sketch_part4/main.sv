@@ -86,7 +86,7 @@ logic [$clog2(VRAM_L)-1:0] vram_wr_addr, vram_clear_counter;
 logic vram_wr_ena;
 ILI9341_color_t vram_rd_data;
 ILI9341_color_t vram_wr_data;
-enum logic {S_VRAM_CLEARING, S_VRAM_ACTIVE } vram_state;
+enum logic {S_VRAM_CLEARING, S_VRAM_ACTIVE} vram_state;
 
 block_ram #(.W(VRAM_W), .L(VRAM_L)) VRAM(
   .clk(clk), .rd_addr(vram_rd_addr), .rd_data(vram_rd_data),
@@ -94,6 +94,32 @@ block_ram #(.W(VRAM_W), .L(VRAM_L)) VRAM(
 );
 
 // Put appropriate RAM clearing logic here!
+
+assign vram_clear_counter = VRAM_L-1;
+
+always_ff @(posedge clk) begin
+  
+  case(vram_state)
+    S_VRAM_ACTIVE: begin
+      if (rst) begin
+        vram_state <= S_VRAM_CLEARING;
+      end
+    end
+
+    S_VRAM_CLEARING: begin
+      if (vram_clear_counter == 0) begin
+        vram_state <= S_VRAM_ACTIVE;
+        vram_clear_counter <= VRAM_L-1;
+      end else begin
+        vram_wr_addr <= vram_clear_counter;
+        vram_wr_data <= BLACK;
+        vram_clear_counter <= vram_clear_counter - 1;
+      end
+    end
+
+    default : vram_state <= S_VRAM_CLEARING;
+  endcase
+end
 
 
 assign backlight = 1;

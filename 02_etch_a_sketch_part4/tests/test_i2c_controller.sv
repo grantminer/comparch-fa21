@@ -38,7 +38,7 @@ always #(CLK_PERIOD_NS/2) clk = ~clk;
 
 initial begin
   // Collect waveforms
-  $dumpfile("i2c_controller.fst");
+  $dumpfile("i2c_controller.vcd");
   $dumpvars(0, UUT);
   
   // Initialize module inputs.

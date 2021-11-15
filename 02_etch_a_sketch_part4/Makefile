@@ -2,7 +2,7 @@
 # -g2012 selects the 2012 version of iVerilog
 IVERILOG=iverilog -g2012 -Wall -y ./ -I ./
 VVP=vvp
-VVP_POST=-fst
+VVP_POST=-vcd
 VIVADO=vivado -mode batch -source
 
 ILI9341_SRCS=spi_controller.sv ili9341_display_controller.sv spi_types.sv ili9341_defines.sv block_rom.sv
@@ -31,7 +31,7 @@ waves_spi_controller: test_spi_controller
 test_i2c_controller : tests/test_i2c_controller.sv i2c_controller.sv i2c_types.sv
 	${IVERILOG} $^ -o test_i2c_controller.bin && ${VVP} test_i2c_controller.bin ${VVP_POST}
 waves_i2c_controller: test_i2c_controller
-	gtkwave i2c_controller.fst -a tests/i2c_controller.gtkw
+	gtkwave i2c_controller.vcd -a tests/i2c_controller.gtkw
 
 memories/ili9341_init.memh: generate_memories.py
 	./generate_memories.py --memory ili9341 --out memories/ili9341_init.memh

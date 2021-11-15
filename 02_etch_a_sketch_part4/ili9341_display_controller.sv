@@ -67,7 +67,7 @@ spi_controller SPI0(
 wire [7:0] rom_data;
 logic [$clog2(ROM_LENGTH)-1:0] rom_addr;
 block_rom #(.INIT("memories/ili9341_init.memh"), .W(8), .L(ROM_LENGTH)) ILI9341_INIT_ROM (
-  .clk(clk), .addr(rom_addr), .data(rom_data)
+  .clk(clk), .rd_addr(rom_addr), .rd_data(rom_data)
 );
 
 

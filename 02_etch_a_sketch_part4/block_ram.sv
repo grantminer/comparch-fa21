@@ -10,7 +10,7 @@ input clk;
 input [$clog2(L)-1:0] rd_addr, wr_addr;
 output logic [W-1:0] rd_data;
 input wire wr_ena;
-output logic [W-1:0] wr_data;
+input wire [W-1:0] wr_data;
 
 logic [W-1:0] ram [0:L-1];
 initial begin
