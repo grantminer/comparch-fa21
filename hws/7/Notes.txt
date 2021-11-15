@@ -1,0 +1,5 @@
+I ran into some errors with the test bench that I couldn't resolve.
+The test code told me there were numerous errors, but when looking
+at the waveforms, the reported errors did not occur. Have not been
+able to figure out what went wrong, so I'm submitting this without
+having been completely successful.
