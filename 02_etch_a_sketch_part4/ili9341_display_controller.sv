@@ -14,7 +14,7 @@ module ili9341_display_controller(
   spi_csb, spi_clk, spi_mosi, spi_miso, data_commandb,
   vsync, hsync,
   touch,
-  vram_rd_addr, vram_rd_data
+  vram_rd_addr, vram_rd_data, button
 );
 
 parameter CLK_HZ = 12_000_000; // aka ticks per second
@@ -24,7 +24,7 @@ parameter VRAM_L = DISPLAY_HEIGHT*DISPLAY_WIDTH;
 parameter CFG_CMD_DELAY = CLK_HZ*150/1000; // wait 150ms after certain configuration commands
 parameter ROM_LENGTH=125; // Set this based on the output of generate_memories.py
 
-input wire clk, rst, ena;
+input wire clk, rst, ena, button;
 output logic display_rstb; // Need a separate value because the display has an opposite reset polarity.
 always_comb display_rstb = ~rst; // Fix the active low reset
 
@@ -146,6 +146,7 @@ always_comb begin  : draw_cursor_logic
     pixel_color = WHITE;
   end else begin
     // Have this draw from memory using rd_addr and rd_data
+    r
   end
 end
 
@@ -163,6 +164,8 @@ always_ff @(posedge clk) begin : main_fsm
     pixel_y <= 0;
     rom_addr <= 0;
     data_commandb <= 1;
+  end else if (button) begin
+    data_commandb <= 8'h21;
   end
   else if(ena) begin
     case (state)

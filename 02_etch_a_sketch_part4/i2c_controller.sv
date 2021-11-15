@@ -154,7 +154,7 @@ always_ff @(posedge clk) begin : i2c_fsm
         S_ACK_WR: begin
           if(scl) begin // negative edge logic? //TODO(avinash)
             state <= S_STOP;
-            if(~sda) begin // need to drive sda high after scl is set high
+            if(~sda) begin // Does this need to drive scl high after sda for stop sequence
             end
           end
         end
@@ -169,7 +169,7 @@ always_ff @(posedge clk) begin : i2c_fsm
         end
       endcase
       end else begin // still waiting on clock divider counter
-        clk_divider_counter <= clk_divider_counter - 1;
+        clk_divider_counter <= clk_divider_counter - 1; // Case statement architecture is wisely only called on the clk divider edge, instead of the clock being divided in the cases
       end
     end
   end
@@ -178,16 +178,16 @@ end
 
 // SOLUTION START
 always_comb case(state)
-  S_START, S_ADDR, S_WR_DATA, S_ACK_RD: sda_oe = 1;
-  default : sda_oe = 0;
+  S_START, S_ADDR, S_WR_DATA, S_ACK_RD: sda_oe = 1; // Allows the controller to send to the target
+  default : sda_oe = 0; // Holds line low to let target control the line.
 endcase
 
 always_comb case(state)
   S_START: sda_out = 0; // Start signal.
-  S_ADDR: sda_out = addr_buffer[bit_counter[2:0]];
+  S_ADDR: sda_out = addr_buffer[bit_counter[2:0]]; // Outputs address values as bit counter increments
   S_WR_DATA : sda_out = data_buffer[7]; //data_buffer[bit_counter];
-  S_ACK_RD : sda_out = 0;
-  default : sda_out = 0; //TODO
+  S_ACK_RD : sda_out = 0; // Tells target that read data has been received
+  default : sda_out = 0; //TODO // Should have stop condition details
 endcase
 // SOLUTION END
 

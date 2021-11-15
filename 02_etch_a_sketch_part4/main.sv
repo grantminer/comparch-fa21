@@ -35,7 +35,7 @@ parameter VRAM_W = 16;
 input wire sysclk;
 wire clk;
 input wire [1:0] buttons;
-logic rst; always_comb rst = buttons[0]; // Use button 0 as a reset signal.
+logic rst; always_comb rst = buttons[1]; // Use button 0 as a reset signal.
 output logic [1:0] leds;
 output logic [2:0] rgb;
 output logic [7:0] pmod;  always_comb pmod = {6'b0, sysclk, clk}; // You can use the pmod port for debugging!
@@ -100,25 +100,28 @@ assign vram_clear_counter = VRAM_L-1;
 always_ff @(posedge clk) begin
   
   case(vram_state)
+
     S_VRAM_ACTIVE: begin
       if (rst) begin
-        vram_state <= S_VRAM_CLEARING;
+        vram_state <= S_VRAM_CLEARING; // switches to clearing if reset is high
       end
     end
 
     S_VRAM_CLEARING: begin
       if (vram_clear_counter == 0) begin
-        vram_state <= S_VRAM_ACTIVE;
-        vram_clear_counter <= VRAM_L-1;
+        vram_state <= S_VRAM_ACTIVE; // returns to active once RAM has been cleared
+        vram_clear_counter <= VRAM_L-1; // resets incrementer for RAM clearing
       end else begin
-        vram_wr_addr <= vram_clear_counter;
-        vram_wr_data <= BLACK;
-        vram_clear_counter <= vram_clear_counter - 1;
+        vram_wr_addr <= vram_clear_counter; // Sets address
+        vram_wr_data <= BLACK; // Defines cleared values
+        vram_clear_counter <= vram_clear_counter - 1; // Increments for next address
       end
     end
 
-    default : vram_state <= S_VRAM_CLEARING;
+    default : vram_state <= S_VRAM_CLEARING; // Set to clear if state is neither
+
   endcase
+
 end
 
 
@@ -129,7 +132,7 @@ ili9341_display_controller ILI9341(
   .data_commandb(data_commandb),
   .touch(touch0),
   .vram_rd_addr(vram_rd_addr),
-  .vram_rd_data(vram_rd_data)
+  .vram_rd_data(vram_rd_data), .button(buttons[0])
 );
 
 // Some useful timing signals. //TODO@(avinash) - move to a different module or use a generate to save space here...
