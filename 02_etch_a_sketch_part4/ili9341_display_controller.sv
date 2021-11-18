@@ -29,11 +29,11 @@ output logic display_rstb; // Need a separate value because the display has an o
 always_comb display_rstb = ~rst; // Fix the active low reset
 
 // SPI Interface
-output logic spi_csb, spi_clk, spi_mosi;
-input wire spi_miso;
+output logic spi_csb, spi_clk, spi_mosi;// chip select bar, clock, // Main Out Secondary In (sends serial data to secondary device)
+input wire spi_miso; // Main In Secondary Out (receives serial data from secondary device)
 
 // Sets the mode (many parallel and serial options, see page 10 of the datasheet).
-output logic [3:0] interface_mode;
+output logic [3:0] interface_mode; // 
 always_comb interface_mode = 4'b1110; // Standard SPI 8-bit mode is 4'b1110.
 
 output logic data_commandb; // Set to 1 to send data, 0 to send commands. Read as Data/Command_Bar
@@ -51,7 +51,7 @@ spi_transaction_t spi_mode; // Whether reading and/or writing and how much
 wire i_ready; // controller ready to accept data
 logic i_valid; // data is available
 logic [15:0] i_data; // input data
-logic o_ready; 
+logic o_ready; // unused
 wire o_valid; // goes low when new transaction begins
 wire [23:0] o_data; // result of read
 wire [4:0] spi_bit_counter; // incrementer for "loop"
@@ -73,10 +73,10 @@ block_rom #(.INIT("memories/ili9341_init.memh"), .W(8), .L(ROM_LENGTH)) ILI9341_
 
 // Main FSM
 enum logic [2:0] {
-  S_INIT = 0,
-  S_INCREMENT_PIXEL = 1,
+  S_INIT = 0, 
+  S_INCREMENT_PIXEL = 1, 
   S_START_FRAME = 2,
-  S_TX_PIXEL_DATA_START = 3,
+  S_TX_PIXEL_DATA_START = 3, 
   S_TX_PIXEL_DATA_BUSY = 4, // Unused
   S_WAIT_FOR_SPI = 5,
   S_ERROR //very useful for debugging
@@ -87,7 +87,7 @@ enum logic [2:0] {
   S_CFG_GET_DATA_SIZE = 0,
   S_CFG_GET_CMD = 1,
   S_CFG_SEND_CMD = 2,
-  S_CFG_GET_DATA = 3,
+  S_CFG_GET_DATA = 3, 
   S_CFG_SEND_DATA = 4,
   S_CFG_SPI_WAIT = 5,
   S_CFG_MEM_WAIT = 6,
@@ -95,7 +95,8 @@ enum logic [2:0] {
 } cfg_state, cfg_state_after_wait;
 
 ILI9341_color_t pixel_color; // basic color options
-logic [$clog2(DISPLAY_WIDTH):0] pixel_x;
+// bit size based on width and height of screen
+logic [$clog2(DISPLAY_WIDTH):0] pixel_x; 
 logic [$clog2(DISPLAY_HEIGHT):0] pixel_y;
 
 ILI9341_register_t current_command; // commands to be sent
@@ -106,10 +107,12 @@ ILI9341_register_t current_command; // commands to be sent
 */
 
 always_comb case(state)
-  S_START_FRAME, S_TX_PIXEL_DATA_START : i_valid = 1;
+// setting data to available in  certain states like the start state and the pixel data start state
+// default state is that data is not available
+  S_START_FRAME, S_TX_PIXEL_DATA_START : i_valid = 1; 
   S_INIT : begin
     case(cfg_state)
-      S_CFG_SEND_CMD, S_CFG_SEND_DATA: i_valid = 1;
+      S_CFG_SEND_CMD, S_CFG_SEND_DATA: i_valid = 1; 
       default: i_valid = 0;
     endcase
   end
@@ -117,8 +120,8 @@ always_comb case(state)
 endcase
   
 always_comb case (state) 
-  S_START_FRAME : current_command = RAMWR;
-  default : current_command = NOP;
+  S_START_FRAME : current_command = RAMWR; // write memory in start frame state
+  default : current_command = NOP; // do nothing as the default
 endcase
 
 always_comb case(state)
@@ -128,8 +131,8 @@ always_comb case(state)
 endcase
 
 always_comb case (state)
-  S_INIT, S_START_FRAME: spi_mode = WRITE_8;
-  default : spi_mode = WRITE_16;
+  S_INIT, S_START_FRAME: spi_mode = WRITE_8; // setting the spi mode which leads to a 8 bit counter
+  default : spi_mode = WRITE_16; // setting the spi mode which leads to a 16 bit counter as the default
 endcase
 
 always_comb begin
@@ -139,7 +142,8 @@ end
 
 always_comb begin  : draw_cursor_logic
   vram_rd_addr = pixel_y*DISPLAY_WIDTH + pixel_x; // From solutions
-  if(touch.valid & (touch.x[8:2] == pixel_x[8:2]) // if touch
+  // if the current touch event matches the pixel, then color that pixel red
+  if(touch.valid & (touch.x[8:2] == pixel_x[8:2]) 
     & (touch.y[8:2] == pixel_y[8:2])) begin
     pixel_color = RED; // make touched pixel white // RED after our modifications
   end else begin
@@ -152,6 +156,7 @@ logic [$clog2(CFG_CMD_DELAY):0] cfg_delay_counter; // clock divider
 logic [7:0] cfg_bytes_remaining;
 
 always_ff @(posedge clk) begin : main_fsm
+  // set everything to the initial state when reset
   if(rst) begin
     state <= S_INIT;
     cfg_state <= S_CFG_GET_DATA_SIZE;
@@ -171,8 +176,8 @@ always_ff @(posedge clk) begin : main_fsm
       S_INIT: begin
         case (cfg_state)
           S_CFG_GET_DATA_SIZE : begin
-            cfg_state_after_wait <= S_CFG_GET_CMD;
-            cfg_state <= S_CFG_MEM_WAIT;
+            cfg_state_after_wait <= S_CFG_GET_CMD; // moving to getting command after the wait
+            cfg_state <= S_CFG_MEM_WAIT; //setting to this state allows for checks to wait until data is ready
             rom_addr <= rom_addr + 1; // move to next pixel value
             case(rom_data) 
               8'hFF: begin // if data at address = 11111111
@@ -185,44 +190,52 @@ always_ff @(posedge clk) begin : main_fsm
                 cfg_state <= S_CFG_DONE; // finished configuring rom (?)
               end
               default: begin
-                cfg_bytes_remaining <= rom_data;
-                cfg_delay_counter <= 0;
+                cfg_bytes_remaining <= rom_data; //the default configuration to read is the rom data
+                cfg_delay_counter <= 0; // sets delay to 0 ms
               end
             endcase
           end
           S_CFG_GET_CMD: begin
-            cfg_state_after_wait <= S_CFG_SEND_CMD;
-            cfg_state <= S_CFG_MEM_WAIT;
+            cfg_state_after_wait <= S_CFG_SEND_CMD; // need to send command after getting command
+            cfg_state <= S_CFG_MEM_WAIT; // setting to this state allows for checks to wait until data is ready
           end
           S_CFG_SEND_CMD : begin
             data_commandb <= 0; // Sending commands to display
             if(rom_data == 0) begin
-              cfg_state <= S_CFG_DONE;
+              cfg_state <= S_CFG_DONE; // if there is no rom data, set the configuration state to done
             end else begin
-              cfg_state <= S_CFG_SPI_WAIT;
-              cfg_state_after_wait <= S_CFG_GET_DATA;
+              cfg_state <= S_CFG_SPI_WAIT; 
+              cfg_state_after_wait <= S_CFG_GET_DATA; // if there is rom data, set the configuration state to get data
             end
           end
           S_CFG_GET_DATA: begin
             data_commandb <= 1; // Sending data to display
-            rom_addr <= rom_addr + 1;
-            if(cfg_bytes_remaining > 0) begin
-              cfg_state_after_wait <= S_CFG_SEND_DATA;
+            rom_addr <= rom_addr + 1; // moving to the next pixel value
+            // continue to send data to display and stay in the same state until 
+            // there are no configuration bytes left to send
+            if(cfg_bytes_remaining > 0) begin 
+              cfg_state_after_wait <= S_CFG_SEND_DATA; 
               cfg_state <= S_CFG_MEM_WAIT;
-              cfg_bytes_remaining <= cfg_bytes_remaining - 1;
+              cfg_bytes_remaining <= cfg_bytes_remaining - 1; 
+            // go back to the getting configuration data size state once all the 
+            // data is sent to the display
             end else begin
               cfg_state_after_wait <= S_CFG_GET_DATA_SIZE;
               cfg_state <= S_CFG_MEM_WAIT;
             end
           end
-          S_CFG_SEND_DATA: begin
-            cfg_state_after_wait <= S_CFG_GET_DATA;
+          S_CFG_SEND_DATA: begin  
+            // keep going between getting data and sending data states until there 
+            // are no configuration bytes remaining          
+            cfg_state_after_wait <= S_CFG_GET_DATA; 
             cfg_state <= S_CFG_SPI_WAIT;
           end
           S_CFG_DONE : begin
             state <= S_START_FRAME; // Switch out of configuration
           end
           S_CFG_SPI_WAIT : begin
+            // the state becomes the state after wait once the delay 
+            // counter is finished
             if(cfg_delay_counter > 0) cfg_delay_counter <= cfg_delay_counter-1;
             else if (i_ready) begin
                cfg_state <= cfg_state_after_wait;
@@ -234,7 +247,7 @@ always_ff @(posedge clk) begin : main_fsm
             // If you had a memory with larger or unknown latency you would put checks in this state to wait till the data was ready.
             cfg_state <= cfg_state_after_wait;
           end
-          default: cfg_state <= S_CFG_DONE;
+          default: cfg_state <= S_CFG_DONE; // default state is finished configuration
         endcase
       end
       S_WAIT_FOR_SPI: begin
@@ -255,8 +268,8 @@ always_ff @(posedge clk) begin : main_fsm
       S_TX_PIXEL_DATA_BUSY: begin // Never used state
         if(i_ready) state <= S_INCREMENT_PIXEL; // if ready for data, continue to increment
       end
-      S_INCREMENT_PIXEL: begin // loops through pixels to look for touch
-        state <= S_TX_PIXEL_DATA_START;
+      S_INCREMENT_PIXEL: begin // loops through pixels to look for touch      
+        state <= S_TX_PIXEL_DATA_START;// alternate between sending data to display and incrementing pixels states
         if(pixel_x < (DISPLAY_WIDTH-1)) begin // moves from left to right
           pixel_x <= pixel_x + 1;
         end else begin
