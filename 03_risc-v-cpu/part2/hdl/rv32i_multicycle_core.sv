@@ -62,7 +62,7 @@ enum logic [1:0] {ALU_SRC_A_PC, ALU_SRC_A_RF, ALU_SRC_A_OLD_PC} alu_src_a;
 enum logic [1:0] {ALU_SRC_B_RF, ALU_SRC_B_IMM, ALU_SRC_B_4} alu_src_b;
 logic [31:0] src_a, src_b;
 wire [31:0] alu_result;
-alu_control_t alu_control;
+logic [2:0] alu_control;
 wire overflow;
 wire zero;
 wire equal;
@@ -282,7 +282,16 @@ always_comb begin : MULTICYCLE_FSM_COMB_OUTPUTS
       mem_data_ena = 0;
       mem_src = MEM_SRC_PC;
       result_src = RESULT_SRC_ALU;
-      alu_control = ALU_INVALID;
+      case(funct3)
+        3'b000: alu_control= funct7[5] ? ALU_SUB : ALU_ADD;
+        3'b001: alu_control= ALU_SLL;
+        3'b010: alu_control= ALU_SLT;
+        3'b011: alu_control= ALU_SLTU;
+        3'b100: alu_control= ALU_XOR;
+        3'b101: alu_control= funct7[5] ? ALU_SRA : ALU_SRL;
+        3'b110: alu_control= ALU_OR;
+        3'b111: alu_control= ALU_AND;
+      endcase
     end
     S_EXECUTE_I: begin
       mem_wr_ena = 0;
@@ -295,7 +304,16 @@ always_comb begin : MULTICYCLE_FSM_COMB_OUTPUTS
       mem_data_ena = 0;
       mem_src = MEM_SRC_PC;
       result_src = RESULT_SRC_ALU;
-      alu_control = ALU_ADD; // Use my funct values to set the operation
+      case(funct3)
+        3'b000: alu_control= ALU_ADD;
+        3'b001: alu_control= ALU_SLL;
+        3'b010: alu_control= ALU_SLT;
+        3'b011: alu_control= ALU_SLTU;
+        3'b100: alu_control= ALU_XOR;
+        3'b101: alu_control= funct7[5] ? ALU_SRA : ALU_SRL;
+        3'b110: alu_control= ALU_OR;
+        3'b111: alu_control= ALU_AND;
+      endcase
     end
     S_ALU_WRITEBACK: begin
       mem_wr_ena = 0;
